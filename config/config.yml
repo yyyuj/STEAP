@@ -50,7 +50,7 @@ SPECIFICITY_INPUT:
 # path: filepath for munged GWAS sumstats. Uncompressed / gz or bz2 compressed files allowed.
 GWAS_SUMSTATS:
   - id: PGC_UKB_depression
-    path: gwas/PGC_UKB_depression.sumstats.gz
+    path: /home/jyu/gwas/PGC_UKB_depression.sumstats.gz
 
 
 ### HMAGMA_ANNOT: annotation file for H-MAGMA
