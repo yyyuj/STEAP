@@ -1,0 +1,36 @@
+{
+  "build": "py36h99e49ec_0",
+  "build_number": 0,
+  "channel": "https://conda.anaconda.org/anaconda",
+  "constrains": [],
+  "depends": [
+    "python >=3.6,<3.7.0a0",
+    "libgcc-ng >=7.3.0",
+    "blas * openblas",
+    "libgfortran-ng >=7,<8.0a0",
+    "libopenblas >=0.3.3,<1.0a0",
+    "numpy-base 1.16.3 py36h2f8d375_0"
+  ],
+  "extracted_package_dir": "/home/jyu/.conda/pkgs/numpy-1.16.3-py36h99e49ec_0",
+  "files": [],
+  "fn": "numpy-1.16.3-py36h99e49ec_0.tar.bz2",
+  "license": "BSD 3-Clause",
+  "link": {
+    "source": "/home/jyu/.conda/pkgs/numpy-1.16.3-py36h99e49ec_0",
+    "type": 1
+  },
+  "md5": "66aafe102f149222b869de0f92173c1e",
+  "name": "numpy",
+  "package_tarball_full_path": "/home/jyu/.conda/pkgs/numpy-1.16.3-py36h99e49ec_0.tar.bz2",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "numpy=1.16.3",
+  "sha256": "eae95150aec17afd869f6627da16ce9398a21d3591840197be285d24ee2c95a8",
+  "size": 49836,
+  "subdir": "linux-64",
+  "timestamp": 1555949575000,
+  "url": "https://conda.anaconda.org/anaconda/linux-64/numpy-1.16.3-py36h99e49ec_0.tar.bz2",
+  "version": "1.16.3"
+}

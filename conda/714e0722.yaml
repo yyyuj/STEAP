@@ -1,0 +1,12 @@
+name: cellectpy27 # ONLY USED FOR LDSC
+channels:
+  - anaconda
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=2.7
+  - bitarray=0.8
+  - numpy=1.12
+  - pandas=0.20
+  - scipy=0.18

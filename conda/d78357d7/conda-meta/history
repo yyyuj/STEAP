@@ -1,0 +1,53 @@
+==> 2025-03-24 15:17:24 <==
+# cmd: /opt/miniconda/condabin/conda env create --file /STEAP/.snakemake/conda/d78357d7.yaml --prefix /STEAP/.snakemake/conda/d78357d7
+# conda version: 25.1.1
++anaconda/linux-64::_libgcc_mutex-0.1-main
++anaconda/linux-64::_openmp_mutex-5.1-1_gnu
++anaconda/linux-64::blas-1.0-openblas
++anaconda/linux-64::bzip2-1.0.8-h5eee18b_6
++anaconda/linux-64::c-ares-1.19.1-h5eee18b_0
++anaconda/linux-64::ca-certificates-2025.2.25-h06a4308_0
++anaconda/linux-64::certifi-2021.5.30-py36h06a4308_0
++anaconda/linux-64::krb5-1.19.2-hac12032_0
++anaconda/linux-64::ld_impl_linux-64-2.40-h12ee557_0
++anaconda/linux-64::libcurl-7.87.0-h91b91d3_0
++anaconda/linux-64::libdeflate-1.22-h5eee18b_0
++anaconda/linux-64::libedit-3.1.20210714-h7f8727e_0
++anaconda/linux-64::libev-4.33-h7f8727e_1
++anaconda/linux-64::libffi-3.3-he6710b0_2
++anaconda/linux-64::libgcc-ng-11.2.0-h1234567_1
++anaconda/linux-64::libgfortran-ng-7.5.0-ha8ba4b0_17
++anaconda/linux-64::libgfortran4-7.5.0-ha8ba4b0_17
++anaconda/linux-64::libgomp-11.2.0-h1234567_1
++anaconda/linux-64::libnghttp2-1.52.0-ha637b67_1
++anaconda/linux-64::libopenblas-0.3.18-hf726d26_0
++anaconda/linux-64::libssh2-1.10.0-h37d81fd_2
++anaconda/linux-64::libstdcxx-ng-11.2.0-h1234567_1
++anaconda/linux-64::ncurses-6.2-he6710b0_1
++anaconda/linux-64::numpy-1.16.3-py36h99e49ec_0
++anaconda/linux-64::numpy-base-1.16.3-py36h2f8d375_0
++anaconda/linux-64::openssl-1.1.1w-h7f8727e_0
++anaconda/linux-64::pandas-0.24.2-py36he6710b0_0
++anaconda/linux-64::patsy-0.5.1-py36_0
++anaconda/linux-64::pip-21.2.2-py36h06a4308_0
++anaconda/linux-64::python-3.6.13-h12debd9_1
++anaconda/linux-64::readline-8.1-h27cfd23_0
++anaconda/linux-64::scipy-1.5.2-py36habc2bb6_0
++anaconda/linux-64::setuptools-58.0.4-py36h06a4308_0
++anaconda/linux-64::sqlite-3.40.1-h5082296_0
++anaconda/linux-64::statsmodels-0.11.1-py36h7b6447c_0
++anaconda/linux-64::tk-8.6.14-h39e8969_0
++anaconda/linux-64::xz-5.2.10-h5eee18b_1
++anaconda/linux-64::zlib-1.2.13-h5eee18b_1
++anaconda/noarch::python-dateutil-2.8.2-pyhd3eb1b0_0
++anaconda/noarch::pytz-2021.3-pyhd3eb1b0_0
++anaconda/noarch::six-1.16.0-pyhd3eb1b0_1
++anaconda/noarch::wheel-0.37.1-pyhd3eb1b0_0
++bioconda/linux-64::bedops-2.4.37-hc9558a2_0
++bioconda/linux-64::bedtools-2.30.0-h7d7f7ad_2
++bioconda/linux-64::htslib-1.13-h9093b5e_0
++bioconda/linux-64::pybedtools-0.8.2-py36hb377018_1
++bioconda/linux-64::pysam-0.17.0-py36h61e5637_0
++bioconda/linux-64::samtools-1.13-h8c37831_0
++conda-forge/linux-64::python_abi-3.6-2_cp36m
+# update specs: ['numpy=1.16.3', 'statsmodels=0.11.1', 'bedops=2.4.37', 'pandas=0.24.2', 'pybedtools=0.8', 'python=3.6']

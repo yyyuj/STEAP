@@ -1,0 +1,11 @@
+prefix=/STEAP/.snakemake/conda/714e0722
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+toolexeclibdir=${libdir}
+includedir=/STEAP/.snakemake/conda/714e0722/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4.4
+Libs: -L${toolexeclibdir} -lffi
+Cflags: -I${includedir}

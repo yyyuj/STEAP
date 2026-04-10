@@ -1,0 +1,5 @@
+#!/STEAP/.snakemake/conda/714e0722/bin/python2.7
+
+import pydoc
+if __name__ == '__main__':
+    pydoc.cli()

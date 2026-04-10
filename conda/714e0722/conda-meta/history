@@ -1,0 +1,33 @@
+==> 2025-03-24 15:16:24 <==
+# cmd: /opt/miniconda/condabin/conda env create --file /STEAP/.snakemake/conda/714e0722.yaml --prefix /STEAP/.snakemake/conda/714e0722
+# conda version: 25.1.1
++anaconda/linux-64::_libgcc_mutex-0.1-main
++anaconda/linux-64::_openmp_mutex-5.1-1_gnu
++anaconda/linux-64::bitarray-0.8.3-py27h14c3975_0
++anaconda/linux-64::ca-certificates-2025.2.25-h06a4308_0
++anaconda/linux-64::libffi-3.4.4-h6a678d5_1
++anaconda/linux-64::libstdcxx-ng-11.2.0-h1234567_1
++anaconda/linux-64::ncurses-6.4-h6a678d5_0
++anaconda/linux-64::pandas-0.20.3-py27h820b67f_2
++anaconda/linux-64::pip-19.3.1-py27_0
++anaconda/linux-64::python-2.7.18-h42bf7aa_3
++anaconda/linux-64::readline-8.2-h5eee18b_0
++anaconda/linux-64::setuptools-44.0.0-py27_0
++anaconda/linux-64::sqlite-3.45.3-h5eee18b_0
++anaconda/linux-64::tk-8.6.14-h39e8969_0
++anaconda/linux-64::zlib-1.2.13-h5eee18b_1
++anaconda/noarch::certifi-2020.6.20-pyhd3eb1b0_3
++anaconda/noarch::python-dateutil-2.8.2-pyhd3eb1b0_0
++anaconda/noarch::pytz-2021.3-pyhd3eb1b0_0
++anaconda/noarch::six-1.16.0-pyhd3eb1b0_1
++anaconda/noarch::wheel-0.37.1-pyhd3eb1b0_0
++conda-forge/linux-64::blas-1.1-openblas
++conda-forge/linux-64::libgcc-14.2.0-h767d61c_2
++conda-forge/linux-64::libgcc-ng-14.2.0-h69a702a_2
++conda-forge/linux-64::libgfortran-14.2.0-h69a702a_2
++conda-forge/linux-64::libgfortran5-14.2.0-hf1ad2bd_2
++conda-forge/linux-64::libgomp-14.2.0-h767d61c_2
++conda-forge/linux-64::numpy-1.12.1-py27_blas_openblas_200
++conda-forge/linux-64::openblas-0.2.19-2
++conda-forge/linux-64::scipy-0.18.1-np112py27_blas_openblas_201
+# update specs: ['scipy=0.18', 'numpy=1.12', 'python=2.7', 'pandas=0.20', 'bitarray=0.8']

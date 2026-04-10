@@ -1,0 +1,19 @@
+#
+# Author: Lasse Collin
+#
+# This file has been put into the public domain.
+# You can do whatever you want with this file.
+#
+
+prefix=/STEAP/.snakemake/conda/d78357d7
+exec_prefix=/STEAP/.snakemake/conda/d78357d7
+libdir=/STEAP/.snakemake/conda/d78357d7/lib
+includedir=/STEAP/.snakemake/conda/d78357d7/include
+
+Name: liblzma
+Description: General purpose data compression library
+URL: https://tukaani.org/xz/
+Version: 5.2.10
+Cflags: -I${includedir}
+Libs: -L${libdir} -llzma
+Libs.private: -pthread -lpthread

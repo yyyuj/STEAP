@@ -1,0 +1,82 @@
+{
+  "build": "py27h14c3975_0",
+  "build_number": 0,
+  "channel": "https://conda.anaconda.org/anaconda",
+  "constrains": [],
+  "depends": [
+    "libgcc-ng >=7.2.0",
+    "python >=2.7,<2.8.0a0"
+  ],
+  "extracted_package_dir": "/home/jyu/.conda/pkgs/bitarray-0.8.3-py27h14c3975_0",
+  "files": [
+    "lib/python2.7/site-packages/bitarray-0.8.3-py2.7.egg-info",
+    "lib/python2.7/site-packages/bitarray/__init__.py",
+    "lib/python2.7/site-packages/bitarray/__init__.pyc",
+    "lib/python2.7/site-packages/bitarray/_bitarray.so",
+    "lib/python2.7/site-packages/bitarray/test_bitarray.py",
+    "lib/python2.7/site-packages/bitarray/test_bitarray.pyc"
+  ],
+  "fn": "bitarray-0.8.3-py27h14c3975_0.tar.bz2",
+  "license": "PSF",
+  "link": {
+    "source": "/home/jyu/.conda/pkgs/bitarray-0.8.3-py27h14c3975_0",
+    "type": 1
+  },
+  "md5": "acd8de0687d94ec7aeacf82e928c779d",
+  "name": "bitarray",
+  "package_tarball_full_path": "/home/jyu/.conda/pkgs/bitarray-0.8.3-py27h14c3975_0",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "lib/python2.7/site-packages/bitarray-0.8.3-py2.7.egg-info",
+        "path_type": "hardlink",
+        "sha256": "3ae90399e74fa9e2069be14262a9ccc4babb354645d9deff526fa9cbe8293a45",
+        "sha256_in_prefix": "3ae90399e74fa9e2069be14262a9ccc4babb354645d9deff526fa9cbe8293a45",
+        "size_in_bytes": 1151
+      },
+      {
+        "_path": "lib/python2.7/site-packages/bitarray/__init__.py",
+        "path_type": "hardlink",
+        "sha256": "bbc1f0d2041e2f5a8b80b0557bf07bdbd1c5df33f31f51c8dd326a013ef41ddd",
+        "sha256_in_prefix": "bbc1f0d2041e2f5a8b80b0557bf07bdbd1c5df33f31f51c8dd326a013ef41ddd",
+        "size_in_bytes": 4440
+      },
+      {
+        "_path": "lib/python2.7/site-packages/bitarray/__init__.pyc",
+        "path_type": "hardlink",
+        "sha256": "90d15bdbeddbd63c682598a1f7bdce69f7397d9d1930de9448eaeac96dc786d2",
+        "sha256_in_prefix": "90d15bdbeddbd63c682598a1f7bdce69f7397d9d1930de9448eaeac96dc786d2",
+        "size_in_bytes": 6070
+      },
+      {
+        "_path": "lib/python2.7/site-packages/bitarray/_bitarray.so",
+        "path_type": "hardlink",
+        "sha256": "0ebc08daf0f31fb0fd1ee972163fb64fdb6f2c63288eb2bdfa8c325aa1157d6c",
+        "sha256_in_prefix": "0ebc08daf0f31fb0fd1ee972163fb64fdb6f2c63288eb2bdfa8c325aa1157d6c",
+        "size_in_bytes": 63088
+      },
+      {
+        "_path": "lib/python2.7/site-packages/bitarray/test_bitarray.py",
+        "path_type": "hardlink",
+        "sha256": "e712fdc43e984fd0c7685301fa099b38bfd18252a5ea5a8848febc8a362c1cab",
+        "sha256_in_prefix": "e712fdc43e984fd0c7685301fa099b38bfd18252a5ea5a8848febc8a362c1cab",
+        "size_in_bytes": 68981
+      },
+      {
+        "_path": "lib/python2.7/site-packages/bitarray/test_bitarray.pyc",
+        "path_type": "hardlink",
+        "sha256": "fd9ff7549dfe30500d94668ecb2b31153ef658bc33385f84bd0964da01f8dcba",
+        "sha256_in_prefix": "fd9ff7549dfe30500d94668ecb2b31153ef658bc33385f84bd0964da01f8dcba",
+        "size_in_bytes": 77403
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "bitarray=0.8",
+  "sha256": "0b2a090ef2337c3b0a65db2e9a712d35f116c0e2fd8f55efae9ef8400885eeed",
+  "size": 55826,
+  "subdir": "linux-64",
+  "timestamp": 1532525189000,
+  "url": "https://conda.anaconda.org/anaconda/linux-64/bitarray-0.8.3-py27h14c3975_0.tar.bz2",
+  "version": "0.8.3"
+}
