@@ -1,50 +1,137 @@
-######If you want to build a container by yourself
+STEAP Singularity / Apptainer — Build and deployment guide
+============================================================
 
-0. 
-Create the gwas input folder /gwas with the file PGC_UKB_depression.sumstats.gz
-Create the output folder /out/CELLECT-PGC_UKB_depression
+This document is the administrator reference for building and distributing the
+STEAP container image. For end-user instructions, see:
 
-
-1.Build singularity container (writable sandbox) using or submitting script. 
-singularity build --fakeroot --sandbox steap_container steap_container.def
-
+  - steap_container_sif/README.md   (container usage)
+  - README.md                       (project overview)
 
 
-2. Copy gwas, output and conda files into steep_container.
-cp -r your_output_folder steap_container/STEAP/out
-cp -r your_gwas_input_folder steap_container/STEAP/gwas
-cp -r conda steap_container/STEAP/.snakemake/conda
+Overview
+--------
+The container ships with all Python and conda environments pre-built. End users
+do NOT copy conda or Python folders from outside the image.
+
+Environments baked into the image:
+  /opt/miniconda/envs/steap        Python 3.9  — Snakemake orchestration
+  /opt/miniconda/envs/munge_ldsc   Python 2.7  — GWAS munging
+  /opt/snakemake-conda             cellectpy3, cellectpy27 — Snakemake rules
 
 
-
-3.Build .sif container (read-only) using or submitting script. 
-singularity build steap_container.sif steap_container  ###will build the .sif file (steap_container.sif)
-
-
-
-4.Extract files for future binding use.
-mkdir $HOME/STEAP
-singularity exec steap_container.sif cp -r /STEAP/.snakemake $HOME/STEAP/snakemake
-singularity exec steap_container.sif cp -r /STEAP/config $HOME/STEAP/config
-singularity exec steap_container.sif cp -r /STEAP/gwas $HOME/STEAP/gwas
-singularity exec steap_container.sif cp -r /STEAP/out $HOME/STEAP/out
+Requirements
+------------
+  - Linux x86_64 build host
+  - Singularity >= 3.0 or Apptainer
+  - --fakeroot flag (or root privileges)
+  - Network access (git clone, conda package downloads)
+  - ~10 GB free disk space (approximate; depends on conda cache)
 
 
+Build the image (recommended)
+-----------------------------
+From the repository root:
 
-5.Test the singularity. 
+    bash build_steap_container/build.sh
 
-singularity exec \
-    steap_container.sif /bin/bash -c "
-    source /opt/miniconda/bin/activate steap
-    cd /STEAP
-    snakemake --unlock --use-conda -j -s cellect-ldsc.snakefile --configfile config/config.yml
-    snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile config/config.yml
-    snakemake --use-conda -j -s cellect-magma.snakefile --configfile config/config.yml || \
-    snakemake --use-conda -j -s cellect-magma.snakefile --configfile config/config.yml
-    snakemake --use-conda -j -s cellect-h-magma.snakefile --configfile config/config.yml || \
-    snakemake --use-conda -j -s cellect-h-magma.snakefile --configfile config/config.yml"
+Output: steap_container_sif/steap_container.sif
+
+Verify all environments:
+
+    singularity test steap_container_sif/steap_container.sif
+
+Expected test output includes:
+  - conda env list showing steap and munge_ldsc
+  - Python version checks for both envs
+  - Non-empty /opt/snakemake-conda directory
 
 
+Manual build (alternative)
+--------------------------
+    cd build_steap_container
+    singularity build --fakeroot ../steap_container_sif/steap_container.sif steap_container.def
 
-###If the run completes successfully, congratulations! You can start your own analysis by changing the config.yml file, gwas and out folder. 
-###The steap_container can be removed
+
+Build process (what happens inside %post)
+-----------------------------------------
+  1. Install system packages (git, git-lfs, build tools, OpenJDK 11)
+  2. Install Miniconda to /opt/miniconda
+  3. Clone STEAP from GitHub and run install.sh
+     - Merges CELLECT repository and submodules
+     - Creates steap and munge_ldsc conda environments
+  4. Pre-create Snakemake rule conda environments:
+       snakemake --conda-create-envs-only --conda-prefix /opt/snakemake-conda
+     for cellect-ldsc, cellect-magma, and cellect-h-magma snakefiles
+  5. Install container_env.sh to /etc/steap/container_env.sh
+
+
+Distributing to users
+---------------------
+Provide:
+  1. steap_container.sif (pre-built image)
+  2. Runtime scripts from steap_container_sif/ (or full git clone)
+  3. Point users to: bash steap_container_sif/setup_host_dirs.sh
+
+Users need only Singularity/Apptainer on their execution host. No conda setup.
+
+
+End-user workflow (summary)
+---------------------------
+    bash steap_container_sif/setup_host_dirs.sh
+    # edit $HOME/STEAP/config/config.yml
+    # add GWAS files to $HOME/STEAP/gwas/
+    bash steap_container_sif/cell_type_sif.sh
+
+See steap_container_sif/README.md for bind mounts, munging, and troubleshooting.
+
+
+Bind mounts (handled by wrapper scripts)
+----------------------------------------
+  $HOME/STEAP/gwas        -> /STEAP/gwas
+  $HOME/STEAP/out         -> /STEAP/out
+  $HOME/STEAP/config      -> /STEAP/config
+  $HOME/STEAP/.snakemake  -> /STEAP/.snakemake   (writable metadata only)
+
+Override with environment variables:
+  STEAP_SIF=/path/to/steap_container.sif
+  STEAP_HOST_DIR=/path/to/my_steap_data
+
+
+Troubleshooting (build)
+-----------------------
+Build fails during conda env creation:
+  - Check network connectivity to repo.anaconda.com and conda-forge
+  - Ensure sufficient disk space
+  - Retry build; conda downloads are cached in the sandbox layer
+
+Build fails during snakemake --conda-create-envs-only:
+  - Verify install.sh completed (CELLECT merge, steap env exists)
+  - Check that config/config.yml is valid YAML
+
+singularity test fails on /opt/snakemake-conda:
+  - Rule envs were not created; inspect build log for snakemake errors
+  - Rebuild from clean state: rm -rf steap_container_sif/steap_container.sif
+
+
+Troubleshooting (runtime)
+-------------------------
+See steap_container_sif/README.md for full runtime troubleshooting.
+
+Common issues:
+  - Wrong Python: user ran bare 'singularity exec ... python' without conda activate
+  - Read-only .snakemake: user skipped setup_host_dirs.sh
+  - Broken envs: user copied conda folder from host install (never do this)
+
+
+Advanced: sandbox build with custom data
+----------------------------------------
+Only needed to bake example GWAS/output into a custom image:
+
+    cd build_steap_container
+    singularity build --fakeroot --sandbox steap_container steap_container.def
+    cp -r /your/gwas steap_container/STEAP/gwas
+    cp -r /your/out   steap_container/STEAP/out
+    singularity build ../steap_container_sif/steap_container.sif steap_container
+    rm -rf steap_container
+
+Do NOT copy conda folders from a host install into the sandbox.
