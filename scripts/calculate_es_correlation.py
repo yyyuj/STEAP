@@ -1,17 +1,11 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
-
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+import itertools
 
 import pandas as pd
-import itertools
 from scipy.stats import spearmanr
-from pathlib import Path
+
+import constants
+from scripts.es_loader import load_es_matrix
+from scripts.stats_utils import bonferroni_correct
 
 
 def calculate_spearmanr(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -23,6 +17,8 @@ def calculate_spearmanr(dataframe: pd.DataFrame) -> pd.DataFrame:
         corr_frame = dataframe.loc[:, [x, y]].fillna(0).copy()
         # ES value should be > 0 in both celltypes
         corr_frame = corr_frame[(corr_frame > 0).all(1)]
+        if corr_frame.empty:
+            continue
         corr, pval = spearmanr(
             corr_frame.iloc[:, 0].values, corr_frame.iloc[:, 1].values
         )
@@ -37,8 +33,7 @@ def correct_pval_correlation(corr_df: pd.DataFrame) -> pd.DataFrame:
     """
     correct_df = corr_df.copy()
     n_test = correct_df.shape[0]
-    correct_df["pval_bonferroni"] = correct_df["pval"] * n_test
-    correct_df.loc[correct_df["pval_bonferroni"] > 1, "pval_bonferroni"] = 1
+    correct_df["pval_bonferroni"] = bonferroni_correct(correct_df["pval"], n_test)
     return correct_df
 
 
@@ -61,14 +56,7 @@ def calculate_es_corr(datasets: list[str]) -> pd.DataFrame:
     """
     df_list = []
     for dataset in datasets:
-        cellex_file = f"esmu/{dataset}.mu.csv"
-        # change esmu to mu if file not found
-        if Path(cellex_file).is_file():
-            df_esmu = pd.read_csv(cellex_file, index_col=0)
-        elif Path(cellex_file.replace(".mu", ".esmu")).is_file():
-            df_esmu = pd.read_csv(cellex_file.replace(".mu", ".esmu"), index_col=0)
-        else:
-            print("file not found")
+        df_esmu = load_es_matrix(dataset)
         df_esmu.columns = [f"{dataset}, {ct}" for ct in df_esmu.columns]
         df_list.append(df_esmu)
 
@@ -80,7 +68,7 @@ def calculate_es_corr(datasets: list[str]) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    df_all = pd.read_hdf("data/CELLECT_output/data.h5", "df_all")
+    df_all = pd.read_hdf(constants.ENRICHMENT_H5, "df_all")
     datasets = df_all["specificity_id"].unique().tolist()
     es_corr_df = calculate_es_corr(datasets)
-    es_corr_df.to_hdf("data/CELLECT_output/data.h5", key="es_corr_df")
+    es_corr_df.to_hdf(constants.CORRELATION_H5, key="es_corr_df")

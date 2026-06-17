@@ -1,19 +1,11 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
+import re
+from typing import Union
 
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+import matplotlib.pyplot as plt
+import pandas as pd
+import upsetplot
 
 import constants
-import pandas as pd
-import re
-import upsetplot
-import matplotlib.pyplot as plt
-from typing import Union
 
 
 def create_group(gwas: str, gwas_group_dict: dict[str, list[str]]) -> str:
@@ -25,6 +17,7 @@ def create_group(gwas: str, gwas_group_dict: dict[str, list[str]]) -> str:
     for k, v in reverse_dict.items():
         if bool(re.search(k, gwas)):
             return v
+    return "Other"
 
 
 def add_count_to_group_dict(
@@ -57,7 +50,7 @@ def make_df_sliced(
     and excel file.
     """
     pattern = "|".join([v for v_list in gwas_group_dict.values() for v in v_list])
-    df_sliced = df[(df["gwas"].str.contains(pattern))].copy()
+    df_sliced = df[(df["gwas"].str.contains(pattern, regex=False))].copy()
     df_sliced = df_sliced[df_sliced[f"pvalue_{constants.PVAL_CORRECTION}"] <= 0.05]
     df_sliced = (
         df_sliced.groupby(["gwas", "specificity_id", "annotation"])
@@ -90,7 +83,6 @@ def make_df_upset(
     )
     df_sliced_upset["group"] = df_sliced_upset["group"].apply(set)
     df_sliced_upset = df_sliced_upset["group"].value_counts().reset_index()
-    #     groups = list(df_sliced['group'].unique())
     groups = list(gwas_group_dict.keys())[::-1]
     for g in groups:
         df_sliced_upset[g] = df_sliced_upset["index"].apply(lambda x: g in x)
@@ -232,7 +224,7 @@ def plot_upset(
 
 
 if __name__ == "__main__":
-    df_all = pd.read_hdf("data/data.h5", "df_all")
+    df_all = pd.read_hdf(constants.ENRICHMENT_H5, "df_all")
     plot_upset(
         df_all,
         constants.GWAS_GROUP_DICT,
@@ -243,5 +235,5 @@ if __name__ == "__main__":
         df_all,
         constants.GWAS_GROUP_DICT,
         save_to_excel=True,
-        filename="figures_and_tables/upsetplot.xslx",
+        filename="figures_and_tables/upsetplot.xlsx",
     )

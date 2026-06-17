@@ -9,6 +9,7 @@ gwas/
 ldsc/
 rules/*
 !rules/common_func1.smk
+!rules/magma_common.smk
 *cellect_job*.sh*
 CHANGELOG.md
 .gitmodules

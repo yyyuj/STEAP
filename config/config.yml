@@ -28,7 +28,7 @@ SPECIFICITY_INPUT:
   - id: tabula_muris
     path: esmu/tabula_muris.mu.csv
   - id: DroNc_Human_Hippocampus
-    path: esmu/GTEx_droncseq_hip_pcf.esmu.csv
+    path: esmu/DroNc_Human_Hippocampus.esmu.csv
   - id: PsychENCODE_DER-22
     path: esmu/PsychENCODE_DER-22.esmu.csv
   - id: GSE101601_Temporal_Cortex

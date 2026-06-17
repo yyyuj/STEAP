@@ -1,13 +1,3 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
-
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
 import constants
 import pandas as pd
 from pathlib import Path
@@ -104,31 +94,16 @@ def pvalue_correction(
         The output pandas dataframe equals the input dataframe with an
         additional column containing the corrected pvalues.
     """
-    df_p = dataframe.pivot_table(
-        values="pvalue",
-        index=["method", "gwas", "specificity_id"],
-        columns=["annotation"],
-    )
-    df_p = (
-        df_p.apply(
-            lambda row: multipletests(row.dropna(), method=method)[1],
-            axis=1,
-            result_type="reduce",
-        )
-        .apply(pd.Series)
-        .stack()
-        .reset_index()
-        .drop("level_3", axis=1)
-    )
-    df_p.rename(columns={0: f"pvalue_{method}"}, inplace=True)
-    df_p["annotation"] = dataframe["annotation"]
-    corrected_df = pd.merge(
-        dataframe, df_p, on=["gwas", "specificity_id", "annotation", "method"]
-    )
-    return corrected_df
+    corrected_parts = []
+    for _, group in dataframe.groupby(["method", "gwas", "specificity_id"], sort=False):
+        part = group.copy()
+        corrected = multipletests(group["pvalue"].values, method=method)[1]
+        part[f"pvalue_{method}"] = corrected
+        corrected_parts.append(part)
+    return pd.concat(corrected_parts, ignore_index=True)
 
 
 if __name__ == "__main__":
     df_all = make_df(constants.CELLECT_OUTDIR)
     df_all = pvalue_correction(df_all, method=constants.PVAL_CORRECTION)
-    df_all.to_hdf("data/data.h5", key="df_all", mode="w")
+    df_all.to_hdf(constants.ENRICHMENT_H5, key="df_all", mode="w")

@@ -1,15 +1,6 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
-
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
 import constants
 from scripts.pyCircos import Gcircle
+from scripts.stats_utils import bonferroni_threshold
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -38,10 +29,13 @@ def get_links_and_nodes(
     )
     # only get corr if in gwas_group_dict
     links = links[
-        links[["gwasx", "gwasy"]].apply(lambda x: x.str.contains(pattern)).all(axis=1)
+        links[["gwasx", "gwasy"]]
+        .apply(lambda x: x.str.contains(pattern, regex=False))
+        .all(axis=1)
     ]
     nodes = pd.concat([links["gwasx"], links["gwasy"]]).drop_duplicates().to_list()
-    pthres = 0.05 / (corr_df.shape[0] / len(constants.METHODS))  # bonferroni
+    n_tests = int(corr_df.shape[0] / len(constants.METHODS))
+    pthres = bonferroni_threshold(0.05, n_tests)
     sign_index = (
         pivot_corr_df["pval"][pivot_corr_df["pval"] < pthres]
         .dropna(thresh=sign_threshold)
@@ -63,8 +57,8 @@ def get_gwas_links(
         (pivot_corr_df["gwasx"] == gwas_name) | (pivot_corr_df["gwasy"] == gwas_name)
     ].copy()
     gwas_links = gwas_links[
-        (gwas_links["gwasx"].str.contains(pattern))
-        | (gwas_links["gwasy"].str.contains(pattern))
+        (gwas_links["gwasx"].str.contains(pattern, regex=False))
+        | (gwas_links["gwasy"].str.contains(pattern, regex=False))
     ]
     gwas_links["gwasx"], gwas_links["gwasy"] = np.where(
         gwas_links["gwasy"] == gwas_name,
@@ -174,7 +168,8 @@ def preprocessing(
     links, nodes = get_links_and_nodes(corr_df, pivot_corr_df, pattern, sign_threshold)
     gwas_links = None
     if gwas_name is not None:
-        pthres = 0.05 / (corr_df.shape[0] / len(constants.METHODS))  # bonferroni
+        n_tests = int(corr_df.shape[0] / len(constants.METHODS))
+        pthres = bonferroni_threshold(0.05, n_tests)
         # check significance of correlations
         pivot_corr_df.reset_index(inplace=True)
         pivot_corr_df["pval"] = pivot_corr_df["pval"] < pthres

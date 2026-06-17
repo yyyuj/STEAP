@@ -36,7 +36,7 @@ def check_conditional_and_heritability_config_sections(config_section_string):
                 for d in config[config_section_string]: # loop over list of dicts
                         assert isinstance(d["id"], str)
                         assert isinstance(d["annotations"], list)
-        except:
+        except (KeyError, TypeError, AssertionError):
                 raise Exception("Error in config file: parameter {} is not correctly formatted. Fix the config file and rerun the command".format(config_section_string))
 
 
@@ -113,7 +113,7 @@ def build_dict_of_dataset_selected_annotations(list_of_dicts):
 ## This causes problems if some fields are deleted/missing from the --configfile. Then the config.yml and --configfile will be mixed.
 try: # check if config file is already loaded from the --configfile parameter
     config['BASE_OUTPUT_DIR'] # *OBS*: needs to be updated if BASE_OUTPUT_DIR changes name in the config file.
-except Exception as e:
+except KeyError:
     snakemake.logger.info("Loading default config file: config.yml")
     configfile: 'config.yml' # snakemake load config object
 else:

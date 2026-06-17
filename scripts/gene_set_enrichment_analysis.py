@@ -1,19 +1,16 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
-
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
-import constants
-import pandas as pd
-import mygene
-import gseapy
+import logging
 from pathlib import Path
 from typing import Union
+
+import gseapy
+import mygene
+import pandas as pd
+
+import constants
+from scripts.es_loader import get_enrichr_organism, load_es_matrix
+from scripts.stats_utils import bonferroni_correct
+
+logger = logging.getLogger(__name__)
 
 
 def get_annot_list(
@@ -26,7 +23,7 @@ def get_annot_list(
     Returns a list of celltypes to be analyzed.
     """
     param = "|".join(param_list)
-    param_df = df[(df["gwas"].str.contains(param))]
+    param_df = df[(df["gwas"].str.contains(param, regex=False))]
     sign_enrichment = param_df[f"pvalue_{constants.PVAL_CORRECTION}"] <= 0.05
     sign_enrichment = sign_enrichment.astype(int)
     df_gsea = (
@@ -46,12 +43,12 @@ def get_annot_list(
     else:
         # if multiple gwas then only cell types enriched in at least 2
         min_count = 1
-    #         min_count = 0
 
-    df_gsea = df_gsea[df_gsea["count"] >= 2]  # only get if sign in >= methods
+    min_methods = 2 if n_gwas > 1 else 1
+    df_gsea = df_gsea[df_gsea["count"] >= min_methods]
     df_gsea["count"] = 1  # reset count to 1
     df_gsea = df_gsea.groupby(["specificity_id", "annotation"]).sum().reset_index()
-    N_total = df[(df["gwas"].str.contains(param))]["gwas"].unique().shape[0]
+    N_total = df[(df["gwas"].str.contains(param, regex=False))]["gwas"].unique().shape[0]
     df_gsea["freq"] = df_gsea["count"] / N_total
     df_gsea.sort_values("freq", ascending=False, inplace=True)
     df_gsea["rank"] = df_gsea["count"].rank(ascending=False, method="dense").astype(int)
@@ -64,7 +61,6 @@ def get_annot_list(
     print(f"Top {rank} ranked cell-types (N={len(annot_list)}) in {name} GWAS:")
     for row in df_gsea.iterrows():
         a = row[1]
-        #         print(f"{a[4]}. {a[0]}: {a[1]} (N={a[2]}, freq={a[3]:.2})")
         print(f"{a[4]}. {a[0]}: {a[1]} (N={a[2]})")
 
     print()
@@ -78,14 +74,7 @@ def get_top_genes(annot_list: list[list[str]]) -> dict[str, list[str]]:
     """
     celltype_genes_dict = {}
     for dataset, celltype in annot_list:
-        cellex_file = f"esmu/{dataset}.mu.csv"
-        # change esmu to mu if file not found
-        if Path(cellex_file).is_file():
-            df_esmu = pd.read_csv(cellex_file, index_col=0)
-        elif Path(cellex_file.replace(".mu", ".esmu")).is_file():
-            df_esmu = pd.read_csv(cellex_file.replace(".mu", ".esmu"), index_col=0)
-        else:
-            print("file not found")
+        df_esmu = load_es_matrix(dataset)
         df = df_esmu[celltype]
         df = df.sort_values(ascending=False).head(round(constants.TOP_FREQ * len(df)))
         # https://www.gsea-msigdb.org/gsea/doc/GSEAUserGuideFrame.html
@@ -113,6 +102,11 @@ def get_top_genes(annot_list: list[list[str]]) -> dict[str, list[str]]:
             mg = mygene.MyGeneInfo()
             ginfo = mg.querymany(genes, scopes="ensembl.gene")
             gene_list = [g["symbol"] for g in ginfo if "symbol" in g]
+            n_dropped = len(genes) - len(gene_list)
+            if n_dropped:
+                logger.warning(
+                    "Dropped %d unmapped Ensembl IDs for %s", n_dropped, celltype
+                )
             celltype_genes_dict[celltype] = gene_list
     return celltype_genes_dict
 
@@ -159,8 +153,8 @@ def summarize_gsea(
 
     gsea_df = pd.concat(df_list)
     if correct_pval:
-        # Bonferroni correction
-        gsea_df = gsea_df[(gsea_df["Adjusted P-value"] <= 0.05 / total)]
+        threshold = bonferroni_correct([0.05], n_tests=total)[0]
+        gsea_df = gsea_df[(gsea_df["Adjusted P-value"] <= threshold)]
 
     gsea_grouped_df = (
         gsea_df.groupby(["Gene_set", "Term"])["Celltype"].agg(list).reset_index()
@@ -209,12 +203,12 @@ def gsea(
     """
     print("Performing GSEA...\n")
     overwrite = constants.OVERWRITE_GSEA_ANALYSIS
+    gsea_dict = {}
     for name, param_list in gwas_group_dict.items():
         annot_list = get_annot_list(df, name, param_list, rank)
         celltype_genes_dict = get_top_genes(annot_list)
 
         print("\nRunning Enrichr...")
-        gsea_dict = {}
         gsea_dir = "gsea"
         for i, (celltype, genes) in enumerate(
             celltype_genes_dict.items(),
@@ -228,6 +222,8 @@ def gsea(
                 print("Cell-type already analyzed. Skipping analysis...")
                 gsea_dict[celltype] = pd.read_excel(out_file)
             else:
+                dataset_id = celltype.split(",")[0].strip()
+                organism = get_enrichr_organism(dataset_id)
                 df_list = []
                 for gene_set in constants.GENE_SET_LIST:
                     try:
@@ -235,22 +231,28 @@ def gsea(
                             gene_list=genes,
                             gene_sets=gene_set,
                             outdir=None,
-                            organism="Human",
+                            organism=organism,
                         )
-                        df = enr.results[enr.results["Adjusted P-value"] <= 0.05]
-                        df_list.append(df)
+                        result_df = enr.results[
+                            enr.results["Adjusted P-value"] <= 0.05
+                        ]
+                        df_list.append(result_df)
                     except Exception as e:
-                        print(e)
+                        logger.warning(
+                            "Enrichr failed for %s / %s: %s", celltype, gene_set, e
+                        )
                         continue
                 try:
                     gsea_dict[celltype] = pd.concat(df_list)
                     gsea_dict[celltype].to_excel(out_file, index=False)
                     print("Writing to file...")
                 except ValueError:
+                    logger.warning("No GSEA results for %s", celltype)
                     continue
     return gsea_dict
 
 
 if __name__ == "__main__":
-    df_all = pd.read_hdf("data/data.h5", "df_all")
+    logging.basicConfig(level=logging.INFO)
+    df_all = pd.read_hdf(constants.ENRICHMENT_H5, "df_all")
     gsea(df_all, constants.GWAS_GROUP_DICT)

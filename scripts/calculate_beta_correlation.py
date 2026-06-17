@@ -1,17 +1,9 @@
-# to allow importing to work correctly (in a dirty way)
-import os
-import sys
-import inspect
+import itertools
 
-filepath = os.path.abspath(inspect.getfile(inspect.currentframe()))
-currentdir = os.path.dirname(filepath)
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+import pandas as pd
+from scipy.stats import pearsonr
 
 import constants
-import pandas as pd
-import itertools
-from scipy.stats import pearsonr
 
 
 def calculate_pearson(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -31,7 +23,10 @@ def get_pthres(corr_df: pd.DataFrame) -> float:
     Returns the lowest pvalue from the negative correlations in the
     input dataframe.
     """
-    return corr_df[corr_df["corr"] < 0]["pval"].min()
+    negative = corr_df[corr_df["corr"] < 0]["pval"]
+    if negative.empty:
+        return float("nan")
+    return negative.min()
 
 
 def calculate_celltype_corr(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -68,6 +63,6 @@ def calculate_celltype_corr(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == "__main__":
     print("Calculating Cell Type Correlation...")
-    df_all = pd.read_hdf("data/data.h5", "df_all")
+    df_all = pd.read_hdf(constants.ENRICHMENT_H5, "df_all")
     corr_df = calculate_celltype_corr(df_all)
-    corr_df.to_hdf("data/data.h5", key="corr_df")
+    corr_df.to_hdf(constants.CORRELATION_H5, key="corr_df")
