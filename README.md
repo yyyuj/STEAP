@@ -61,7 +61,8 @@ Best when you want a reproducible environment without managing conda on the host
 ```bash
 git clone https://github.com/erwinerdem/STEAP.git
 cd STEAP
-bash build_steap_container/build.sh          # build image (Linux, network required)
+# Pull pre-built image (recommended) or build locally — see below
+singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
 bash steap_container_sif/setup_host_dirs.sh  # one-time host setup
 # edit $HOME/STEAP/config/config.yml and add GWAS files to $HOME/STEAP/gwas/
 bash steap_container_sif/cell_type_sif.sh    # run enrichment analysis
@@ -125,11 +126,27 @@ The container image ships with **all Python and conda environments pre-built**. 
 | `/opt/snakemake-conda` | Snakemake rule environments (`cellectpy3`, `cellectpy27`) |
 | `/STEAP` | Pipeline code, reference data, default config |
 
-**Build** (on Linux with `--fakeroot` or root):
+**Pull pre-built image** (recommended for most users):
+
+```bash
+singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
+# Apptainer: apptainer pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
+```
+
+Replace `2.0` with the tag that matches your STEAP release. You still need this git clone for the wrapper scripts in `steap_container_sif/`.
+
+**Build locally** (on Linux with `--fakeroot` or root):
 
 ```bash
 bash build_steap_container/build.sh
 singularity test steap_container_sif/steap_container.sif
+```
+
+**Publish to Sylabs Library** (maintainers, after build and test):
+
+```bash
+singularity remote login SylabsCloud
+singularity push steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:TAG
 ```
 
 **Run**:

@@ -67,8 +67,20 @@ Build process (what happens inside %post)
 
 Distributing to users
 ---------------------
-Provide:
-  1. steap_container.sif (pre-built image)
+Preferred: publish to Sylabs Cloud Library so users can pull the image.
+
+  singularity remote login SylabsCloud
+  singularity push steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:TAG
+
+  TAG should match the image version (see %labels in steap_container.def, e.g. 2.0).
+  Push only after: singularity test steap_container_sif/steap_container.sif
+
+Users pull from the repository root (they still need the git clone for wrapper scripts):
+
+  singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:TAG
+
+Alternative distribution:
+  1. steap_container.sif (pre-built image file)
   2. Runtime scripts from steap_container_sif/ (or full git clone)
   3. Point users to: bash steap_container_sif/setup_host_dirs.sh
 

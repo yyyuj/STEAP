@@ -20,7 +20,7 @@ For a high-level overview, see the [main README](../README.md#singularity--appta
 
 ## Prerequisites
 
-- Pre-built `steap_container.sif` (see [building the image](#building-the-image))
+- Pre-built `steap_container.sif` — [pull from Sylabs Library](#pull-pre-built-image) or [build locally](#building-the-image)
 - Singularity ≥ 3.0 or Apptainer on the execution host
 - Linux x86_64
 - Writable home directory for bind-mounted data
@@ -45,9 +45,27 @@ Results appear under `$HOME/STEAP/out/` according to `BASE_OUTPUT_DIR` in your c
 
 ---
 
+## Pull pre-built image
+
+The recommended way to obtain `steap_container.sif` is from the [Sylabs Cloud Library](https://cloud.sylabs.io/library/roshchupkin/steap/steap). From the repository root:
+
+```bash
+singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
+```
+
+Use `apptainer pull` instead of `singularity pull` if Apptainer is your runtime. Replace `2.0` with the tag that matches your STEAP version (see `%labels` in `build_steap_container/steap_container.def`).
+
+Verify after download:
+
+```bash
+singularity test steap_container_sif/steap_container.sif
+```
+
+---
+
 ## Building the image
 
-Image building requires Linux, network access, and `--fakeroot` (or root). It cannot be built on Windows or macOS directly.
+Build locally only if you cannot pull from the library or need a custom image. Image building requires Linux, network access, and `--fakeroot` (or root). It cannot be built on Windows or macOS directly.
 
 From the repository root:
 
@@ -255,8 +273,8 @@ bash steap_container_sif/setup_host_dirs.sh
 ### Container image not found
 
 ```bash
-bash build_steap_container/build.sh
-# or obtain a pre-built .sif from your administrator
+singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
+# or: bash build_steap_container/build.sh
 ```
 
 ---
@@ -267,10 +285,20 @@ bash build_steap_container/build.sh
 - One-shot build: `build_steap_container/build.sh`
 - Image version label: `2.0` (see `%labels` in def file)
 - Container help text: `singularity run steap_container.sif`
+- Sylabs Library: `library://roshchupkin/steap/steap:TAG`
+
+After building and passing `singularity test`, publish a release:
+
+```bash
+singularity remote login SylabsCloud
+singularity push steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:TAG
+```
+
+Use a `TAG` that matches the image version (for example `2.0`).
 
 When distributing to students, provide:
 
-1. A pre-built `steap_container.sif`
+1. The pull command above (or a local copy of `steap_container.sif`)
 2. Link to this README
 3. Instruction to run `setup_host_dirs.sh` once, then edit config and run `cell_type_sif.sh`
 
