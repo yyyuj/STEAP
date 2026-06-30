@@ -16,16 +16,16 @@ After enrichment analysis, STEAP provides post-processing for:
 - Cell-type correlation
 - Expression specificity (ES) gene correlation
 
-![pipeline](https://github.com/erwinerdem/STEAP/blob/master/pipeline.png)
+![pipeline](https://github.com/ComPopBio/STEAP/blob/master/pipeline.png)
 
 ---
 
 ## Table of contents
 
 - [Requirements](#requirements)
-- [Quick start](#quick-start)
-- [Installation (native conda)](#installation-native-conda)
-- [Singularity / Apptainer container](#singularity--apptainer-container)
+- [Get started](#get-started)
+- [Container workflow](#container-workflow)
+- [Native conda workflow](#native-conda-workflow)
 - [Configuration](#configuration)
 - [Tutorial: PGC depression GWAS](#tutorial-pgc-depression-gwas)
 - [Running the pipeline](#running-the-pipeline)
@@ -50,92 +50,44 @@ After enrichment analysis, STEAP provides post-processing for:
 
 ---
 
-## Quick start
+## Get started
 
-Choose one installation path:
-
-### Option A — Singularity / Apptainer (recommended for clusters and teaching)
-
-Best when you want a reproducible environment without managing conda on the host.
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/erwinerdem/STEAP.git
-cd STEAP
-# Pull pre-built image (recommended) or build locally — see below
-singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
-bash steap_container_sif/setup_host_dirs.sh  # one-time host setup
-# edit $HOME/STEAP/config/config.yml and add GWAS files to $HOME/STEAP/gwas/
-bash steap_container_sif/cell_type_sif.sh    # run enrichment analysis
-```
-
-See [steap_container_sif/README.md](steap_container_sif/README.md) for full container documentation.
-
-### Option B — Native conda install
-
-Best for development or when Singularity is unavailable.
-
-```bash
-git clone https://github.com/erwinerdem/STEAP.git
-bash STEAP/install.sh
-conda activate steap
-snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile config/config.yml
-```
-
----
-
-## Installation (native conda)
-
-### Step 1: Install Miniconda
-
-The pipeline is managed through conda environments. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if it is not already available:
-
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-rm Miniconda3-latest-Linux-x86_64.sh
-```
-
-### Step 2: Clone and install STEAP
-
-```bash
-git clone https://github.com/erwinerdem/STEAP.git
-bash STEAP/install.sh
-conda activate steap
+git clone https://github.com/ComPopBio/STEAP.git
 cd STEAP
 ```
 
-`install.sh` must be run from the **parent** of the cloned repository (not from inside `STEAP/`). It performs the following:
+You need this clone for pipeline code, configuration, and wrapper scripts. Git LFS is required for reference data; the native installer sets it up automatically.
 
-1. Clones [CELLECT](https://github.com/perslab/CELLECT) (with git submodules) via git LFS
-2. Merges CELLECT into the STEAP directory structure
-3. Creates the `steap` conda environment from `environment_steap.yml`
-4. Creates the `munge_ldsc` conda environment from `ldsc/environment_munge_ldsc.yml`
+### 2. Choose an installation method
 
-After installation, work from inside the `STEAP/` directory for all pipeline commands.
+| Method | Best for | Next step |
+|--------|----------|-----------|
+| **Container** (Singularity / Apptainer) | Clusters, teaching, reproducible runs without host conda | [Container workflow](#container-workflow) |
+| **Native conda** | Development or environments without Singularity | [Native conda workflow](#native-conda-workflow) |
+
+Both paths use the same `config/config.yml` and produce the same outputs. Pick one — you do not need both.
 
 ---
 
-## Singularity / Apptainer container
+## Container workflow
 
-The container image ships with **all Python and conda environments pre-built**. You do not need to copy Python or conda folders from outside the image.
+The container image ships with **all Python and conda environments pre-built**. You do not need to run `install.sh` or manage conda on the host.
 
-| Path in image | Purpose |
-|---------------|---------|
-| `/opt/miniconda/envs/steap` | Main pipeline (Python 3.9, Snakemake) |
-| `/opt/miniconda/envs/munge_ldsc` | GWAS munging (Python 2) |
-| `/opt/snakemake-conda` | Snakemake rule environments (`cellectpy3`, `cellectpy27`) |
-| `/STEAP` | Pipeline code, reference data, default config |
+### Step 1: Get the container image
 
-**Pull pre-built image** (recommended for most users):
+**Pull pre-built image** (recommended):
 
 ```bash
 singularity pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
 # Apptainer: apptainer pull --name steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:2.0
 ```
 
-Replace `2.0` with the tag that matches your STEAP release. You still need this git clone for the wrapper scripts in `steap_container_sif/`.
+Replace `2.0` with the tag that matches your STEAP release.
 
-**Build locally** (on Linux with `--fakeroot` or root):
+**Build locally** (Linux with `--fakeroot` or root, if you cannot pull from the library):
 
 ```bash
 bash build_steap_container/build.sh
@@ -149,17 +101,73 @@ singularity remote login SylabsCloud
 singularity push steap_container_sif/steap_container.sif library://roshchupkin/steap/steap:TAG
 ```
 
-**Run**:
+### Step 2: Set up host directories
+
+One-time setup creates bind-mount directories under `$HOME/STEAP/`:
 
 ```bash
 bash steap_container_sif/setup_host_dirs.sh
+```
+
+### Step 3: Configure and run
+
+Edit `$HOME/STEAP/config/config.yml`, add munged GWAS files to `$HOME/STEAP/gwas/`, then run:
+
+```bash
 bash steap_container_sif/cell_type_sif.sh
 ```
+
+| Path in image | Purpose |
+|---------------|---------|
+| `/opt/miniconda/envs/steap` | Main pipeline (Python 3.9, Snakemake) |
+| `/opt/miniconda/envs/munge_ldsc` | GWAS munging (Python 2) |
+| `/opt/snakemake-conda` | Snakemake rule environments (`cellectpy3`, `cellectpy27`) |
+| `/STEAP` | Pipeline code, reference data, default config |
 
 | Document | Description |
 |----------|-------------|
 | [steap_container_sif/README.md](steap_container_sif/README.md) | User guide: bind mounts, scripts, troubleshooting |
 | [build_steap_container/build_steap_singularity_steps.txt](build_steap_container/build_steap_singularity_steps.txt) | Build reference for administrators |
+
+---
+
+## Native conda workflow
+
+Use this path when Singularity is unavailable or you are developing on STEAP directly.
+
+### Step 1: Install Miniconda (if needed)
+
+The pipeline is managed through conda environments. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) if it is not already available:
+
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+rm Miniconda3-latest-Linux-x86_64.sh
+```
+
+### Step 2: Run the installer
+
+Run `install.sh` from the **parent** of the cloned repository (not from inside `STEAP/`):
+
+```bash
+# assuming you cloned into ./STEAP
+bash STEAP/install.sh
+conda activate steap
+cd STEAP
+```
+
+`install.sh` performs the following:
+
+1. Clones [CELLECT](https://github.com/perslab/CELLECT) (with git submodules) via git LFS
+2. Merges CELLECT into the STEAP directory structure
+3. Creates the `steap` conda environment from `environment_steap.yml`
+4. Creates the `munge_ldsc` conda environment from `ldsc/environment_munge_ldsc.yml`
+
+After installation, work from inside the `STEAP/` directory for all pipeline commands.
+
+### Step 3: Configure and run
+
+Edit `config/config.yml`, then run Snakemake (see [Running the pipeline](#running-the-pipeline)).
 
 ---
 
@@ -240,21 +248,18 @@ The default [`config/config.yml`](config/config.yml) is preconfigured for the PG
 
 ## Running the pipeline
 
-Activate the `steap` environment before running Snakemake (native install):
+Run each enrichment method separately. Order does not matter, but all three are typically run.
+
+### Native conda
 
 ```bash
 conda activate steap
-```
-
-Run each enrichment method separately. Order does not matter, but all three are typically run:
-
-```bash
 snakemake --use-conda -j <N_CORES> -s cellect-ldsc.snakefile    --configfile config/config.yml
 snakemake --use-conda -j <N_CORES> -s cellect-magma.snakefile   --configfile config/config.yml
 snakemake --use-conda -j <N_CORES> -s cellect-h-magma.snakefile --configfile config/config.yml
 ```
 
-Replace `<N_CORES>` with the number of parallel jobs (e.g. `8`). Snakemake creates per-rule conda environments automatically on first run (native install).
+Replace `<N_CORES>` with the number of parallel jobs (e.g. `8`). Snakemake creates per-rule conda environments automatically on first run.
 
 ### Sun Grid Engine (SGE)
 
@@ -268,7 +273,7 @@ qsub SGE_cluster_h-magma.sh
 
 These scripts wrap `SGE_cluster.sh`, which runs Snakemake with `--use-conda`. Ensure the `steap` environment is available in the job environment (e.g. via module load or conda activation in your cluster profile).
 
-### Singularity / Apptainer
+### Container
 
 ```bash
 bash steap_container_sif/cell_type_sif.sh
@@ -298,7 +303,7 @@ Alternatively, use the web-based [STEAP post-processing Appyter](https://appyter
 Post-processing scripts live in [`scripts/`](scripts/):
 
 | Script | Purpose |
-|--------|---------|
+|--------|----------|
 | `convert_output_to_dataframe.py` | Parse pipeline outputs into DataFrames |
 | `gene_set_enrichment_analysis.py` | GSEA |
 | `calculate_es_correlation.py` | ES gene correlation |

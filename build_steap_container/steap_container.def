@@ -27,7 +27,7 @@ From: ubuntu:20.04
     rm /tmp/miniconda.sh
     export PATH=/opt/miniconda/bin:$PATH
 
-    git clone https://github.com/erwinerdem/STEAP.git /STEAP
+    git clone https://github.com/ComPopBio/STEAP.git /STEAP
     bash /STEAP/install.sh
     mkdir -p /STEAP/out /STEAP/gwas /STEAP/.snakemake
 
